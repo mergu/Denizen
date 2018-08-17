@@ -20,7 +20,7 @@ public class PlayerRiptideScriptEvent extends BukkitScriptEvent implements Liste
     // @Events
     // player activates riptide (in <area>)
     //
-    // @Regex ^on player activates riptide?( in ((notable (cuboid|ellipsoid))|([^\s]+)))?$
+    // @Regex ^on player activates riptide( in ((notable (cuboid|ellipsoid))|([^\s]+)))?$
     //
     // @Cancellable false
     //
