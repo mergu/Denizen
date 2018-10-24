@@ -145,9 +145,11 @@ public class EntityDisabledSlots implements Property {
         // @description
         // Sets the disabled slots of an armor stand in the form li@slot(/action)|...
         // Optionally include an action to disable specific interactions (defaults to ALL).
-        // Provide no input to enable all slots.
+        // Leave empty to enable all slots.
         // Slots: <@link url https://hub.spigotmc.org/javadocs/spigot/org/bukkit/inventory/EquipmentSlot.html>
         // Actions: ALL, REMOVE, PLACE
+        // NOTE: Minecraft contains a bug where disabling HAND/ALL still allows item removal.
+        // To fully disable hand interaction, disable HAND/ALL and HAND/REMOVE.
         // @tags
         // <e@entity.disabled_slots>
         // <e@entity.disabled_slots.raw>
@@ -159,7 +161,7 @@ public class EntityDisabledSlots implements Property {
             }
 
             dList list = mechanism.getValue().asType(dList.class);
-            Map<EquipmentSlot, Set<Action>> map = new HashMap<EquipmentSlot, Set<Action>>();
+            Map<EquipmentSlot, Set<Action>> map = new HashMap<>();
 
             for (String string : list) {
                 String[] split = string.toUpperCase().split("/", 2);
@@ -185,12 +187,7 @@ public class EntityDisabledSlots implements Property {
                     }
                 }
 
-                Set<Action> set = map.get(slot);
-                if (set == null) {
-                    set = new HashSet<Action>();
-                    map.put(slot, set);
-                }
-
+                Set<Action> set = map.computeIfAbsent(slot, k -> new HashSet<>());
                 set.add(action == null ? Action.ALL : action);
             }
 

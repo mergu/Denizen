@@ -5,7 +5,6 @@ import net.aufdemrand.denizen.nms.NMSVersion;
 import net.aufdemrand.denizen.nms.util.jnbt.*;
 import net.aufdemrand.denizen.objects.properties.entity.EntityDisabledSlots.Action;
 import net.aufdemrand.denizencore.utilities.CoreUtilities;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.EquipmentSlot;
@@ -28,7 +27,7 @@ public class CustomNBT {
     private static final Map<EquipmentSlot, Integer> slotMap;
 
     static {
-        slotMap = new HashMap<EquipmentSlot, Integer>();
+        slotMap = new HashMap<>();
         slotMap.put(EquipmentSlot.HAND, 0);
         slotMap.put(EquipmentSlot.FEET, 1);
         slotMap.put(EquipmentSlot.LEGS, 2);
@@ -167,32 +166,38 @@ public class CustomNBT {
         if (itemStack == null || itemStack.getType() == Material.AIR) {
             return null;
         }
+
         CompoundTag compoundTag = NMSHandler.getInstance().getItemHelper().getNbtData(itemStack);
 
-        List<Material> materials = new ArrayList<Material>();
+        List<Material> materials = new ArrayList<>();
         if (compoundTag.getValue().containsKey(key)) {
             List<StringTag> temp = (List<StringTag>) compoundTag.getValue().get(key).getValue();
             for (StringTag tag : temp) {
-                materials.add(Bukkit.getUnsafe().getMaterialFromInternalName(tag.getValue()));
+                materials.add(NMSHandler.getInstance().getItemHelper().getMaterialFromInternalName(tag.getValue()));
             }
         }
 
         return materials;
     }
 
-    public static ItemStack addNBTMaterial(ItemStack itemStack, String key, Material value) {
+    public static ItemStack setNBTMaterials(ItemStack itemStack, String key, List<Material> materials) {
         if (itemStack == null || itemStack.getType() == Material.AIR) {
             return null;
         }
-        CompoundTag compoundTag = NMSHandler.getInstance().getItemHelper().getNbtData(itemStack);
 
-        List<StringTag> materials = new ArrayList<StringTag>();
-        if (compoundTag.getValue().containsKey(key)) {
-            materials.addAll((List<StringTag>) compoundTag.getValue().get(key).getValue());
+        CompoundTag compoundTag = NMSHandler.getInstance().getItemHelper().getNbtData(itemStack);
+        compoundTag = compoundTag.createBuilder().remove(key).build();
+
+        if (materials.isEmpty()) {
+            return NMSHandler.getInstance().getItemHelper().setNbtData(itemStack, compoundTag);
         }
 
-        materials.add(new StringTag(NMSHandler.getInstance().getItemHelper().getVanillaName(new ItemStack(value))));
-        ListTag lt = new ListTag(StringTag.class, materials);
+        List<StringTag> internalMaterials = new ArrayList<>();
+        for (Material material : materials) {
+            internalMaterials.add(new StringTag(NMSHandler.getInstance().getItemHelper().getInternalNameFromMaterial(material)));
+        }
+
+        ListTag lt = new ListTag(StringTag.class, internalMaterials);
         compoundTag = compoundTag.createBuilder().put(key, lt).build();
 
         return NMSHandler.getInstance().getItemHelper().setNbtData(itemStack, compoundTag);

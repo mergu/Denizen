@@ -13,6 +13,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ItemCanDestroy implements Property {
 
@@ -93,6 +94,7 @@ public class ItemCanDestroy implements Property {
         // @input dList(dMaterial)
         // @description
         // Sets the materials this item can destroy while in adventure mode.
+        // Leave empty to remove this property.
         // @tags
         // <i@item.can_destroy>
         // -->
@@ -101,12 +103,18 @@ public class ItemCanDestroy implements Property {
                 dB.echoError("Cannot apply NBT to AIR!");
                 return;
             }
-            List<dMaterial> materials = mechanism.getValue().asType(dList.class).filter(dMaterial.class);
+
             ItemStack itemStack = item.getItemStack();
-            itemStack = CustomNBT.clearNBT(itemStack, CustomNBT.KEY_CAN_DESTROY);
-            for (dMaterial material : materials) {
-                itemStack = CustomNBT.addNBTMaterial(itemStack, CustomNBT.KEY_CAN_DESTROY, material.getMaterial());
+
+            if (mechanism.hasValue()) {
+                List<Material> materials = mechanism.getValue().asType(dList.class).filter(dMaterial.class)
+                        .stream().map(dMaterial::getMaterial).collect(Collectors.toList());
+                itemStack = CustomNBT.setNBTMaterials(itemStack, CustomNBT.KEY_CAN_DESTROY, materials);
             }
+            else {
+                itemStack = CustomNBT.clearNBT(itemStack, CustomNBT.KEY_CAN_DESTROY);
+            }
+
             item.setItemStack(itemStack);
         }
     }
