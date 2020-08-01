@@ -92,6 +92,19 @@ public class ItemTag implements ObjectTag, Notable, Adjustable {
         if (string == null || string.equals("")) {
             return null;
         }
+        if (string.startsWith("item:")) {
+            YamlConfiguration config = new YamlConfiguration();
+            try {
+                config.loadFromString(string);
+                ItemStack item = config.getItemStack("item");
+                if (item != null) {
+                    return new ItemTag(item);
+                }
+            }
+            catch (Exception ex) {
+                Debug.echoError(ex);
+            }
+        }
         ItemTag stack = null;
         if (ObjectFetcher.isObjectWithProperties(string)) {
             return ObjectFetcher.getObjectFrom(ItemTag.class, string, context);
@@ -510,6 +523,17 @@ public class ItemTag implements ObjectTag, Notable, Adjustable {
         return "i@" + getMaterial().identifyNoPropertiesNoIdentifier().replace("m@", "") + PropertyParser.getPropertiesString(this);
     }
 
+    public String identifySerial() {
+        YamlConfiguration config = new YamlConfiguration();
+        if (item != null) {
+            config.set("item", item);
+        }
+        else {
+            config.set("item", new ItemStack(Material.AIR));
+        }
+        return config.saveToString();
+    }
+
     @Override
     public String identifySimple() {
         if (item == null) {
@@ -726,9 +750,7 @@ public class ItemTag implements ObjectTag, Notable, Adjustable {
         // Returns a YAML text section representing the Bukkit serialization of the item, under subkey "item".
         // -->
         registerTag("bukkit_serial", (attribute, object) -> {
-            YamlConfiguration config = new YamlConfiguration();
-            config.set("item", object.getItemStack());
-            return new ElementTag(config.saveToString());
+            return new ElementTag(object.identifySerial());
         });
 
         // <--[tag]
