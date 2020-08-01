@@ -3,6 +3,7 @@ package com.denizenscript.denizen.objects.properties.inventory;
 import com.denizenscript.denizen.objects.InventoryTag;
 import com.denizenscript.denizen.objects.ItemTag;
 import com.denizenscript.denizencore.objects.Mechanism;
+import com.denizenscript.denizencore.objects.core.ElementTag;
 import com.denizenscript.denizencore.objects.core.ListTag;
 import com.denizenscript.denizencore.objects.ObjectTag;
 import com.denizenscript.denizencore.objects.core.MapTag;
@@ -129,6 +130,26 @@ public class InventoryContents implements Property {
                     continue;
                 }
                 map.putObject(String.valueOf(i + 1), new ItemTag(items[i]));
+            }
+            return map;
+        });
+
+        // <--[tag]
+        // @attribute <InventoryTag.map_slots_serial>
+        // @returns MapTag
+        // @group properties
+        // @description
+        // Returns a map of inventory slots to the bukkit serialization of items in those slots (excludes air).
+        // Should only be used in very specific cases. For common use, use <@link tag InventoryTag.map_slots>.
+        // -->
+        PropertyParser.<InventoryContents>registerTag("map_slots_serial", (attribute, contents) -> {
+            MapTag map = new MapTag();
+            ItemStack[] items = contents.inventory.getContents();
+            for (int i = 0; i < items.length; i++) {
+                if (items[i] == null || items[i].getType() == Material.AIR) {
+                    continue;
+                }
+                map.putObject(String.valueOf(i + 1), new ElementTag(new ItemTag(items[i]).identifySerial()));
             }
             return map;
         });
