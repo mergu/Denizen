@@ -49,7 +49,6 @@ public class DenizenChat implements VocalChord {
             defTalker = queue.getDefinition("talker");
         }
         queue.addDefinition("talker", new EntityTag(talker.getEntity()).identify());
-
         String defMessage = null;
         if (queue.hasDefinition("message")) {
             defMessage = queue.getDefinition("message");
